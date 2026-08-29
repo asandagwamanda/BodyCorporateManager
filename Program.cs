@@ -124,6 +124,8 @@ app.MapGet("/me", async (ClaimsPrincipal user, AppDbContext db) =>
 
 app.MapGet("/health", () => Results.Ok(new { status = "ok" }));
 
+app.MapGet("/", () => Results.Ok(new { message = "Hello — BodyCorporateManager API is running." }));
+
 app.MapPost("/admin/create-unit", async (CreateUnitRequest req, HttpRequest http, AppDbContext db) =>
 {
     var provided = http.Headers["X-Admin-Token"].FirstOrDefault();
