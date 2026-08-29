@@ -12,6 +12,7 @@ var jwtKey = builder.Configuration["JWT_KEY"] ?? Environment.GetEnvironmentVaria
 var jwtIssuer = builder.Configuration["JWT_ISSUER"] ?? "BodyCorp";
 var jwtAudience = builder.Configuration["JWT_AUDIENCE"] ?? "BodyCorpClients";
 var inviteCode = builder.Configuration["INVITE_CODE"] ?? Environment.GetEnvironmentVariable("INVITE_CODE") ?? string.Empty;
+var adminToken = builder.Configuration["ADMIN_TOKEN"] ?? Environment.GetEnvironmentVariable("ADMIN_TOKEN") ?? string.Empty;
 
 builder.Services.AddScoped<AppDbContext>();
 builder.Services.AddAuthentication(options =>
@@ -123,8 +124,36 @@ app.MapGet("/me", async (ClaimsPrincipal user, AppDbContext db) =>
 
 app.MapGet("/health", () => Results.Ok(new { status = "ok" }));
 
+app.MapPost("/admin/create-unit", async (CreateUnitRequest req, HttpRequest http, AppDbContext db) =>
+{
+    var provided = http.Headers["X-Admin-Token"].FirstOrDefault();
+    if (string.IsNullOrEmpty(adminToken) || string.IsNullOrEmpty(provided) || provided != adminToken)
+        return Results.Unauthorized();
+
+    var exists = db.Units.Any(u => u.UnitNumber == req.UnitNumber);
+    if (exists)
+        return Results.BadRequest(new { error = "Unit already exists" });
+
+    var unit = new Unit
+    {
+        UnitNumber = req.UnitNumber,
+        OwnerName = req.OwnerName ?? string.Empty,
+        SquareMeters = req.SquareMeters,
+        LevyRatePerSquareMeter = req.LevyRate,
+        CurrentBalance = 0,
+        DebtBalance = 0,
+        CreditBalance = 0
+    };
+    db.Units.Add(unit);
+    await db.SaveChangesAsync();
+    return Results.Ok(new { created = true, unitId = unit.Id });
+});
+
 app.Run();
 
 public record RegisterRequest(string UnitNumber, string Username, string Password, string InviteCode);
 public record LoginRequest(string Username, string Password);
+
+public record CreateUnitRequest(string UnitNumber, string OwnerName, decimal SquareMeters, decimal LevyRate);
+
 
