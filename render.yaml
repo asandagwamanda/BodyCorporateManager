@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: body-corporate-manager
+    env: docker
+    dockerfilePath: Dockerfile
+    autoDeploy: true
+    envVars:
+      - key: DOTNET_ENVIRONMENT
+        value: Production
+      - key: JWT_KEY
+        scope: secret
+      - key: INVITE_CODE
+        scope: secret

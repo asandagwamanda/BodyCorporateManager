@@ -1,0 +1,10 @@
+bin/
+obj/
+publish/
+.vs/
+.vscode/
+bodycorporate.db
+.env
+*.log
+*.user
+*.DS_Store
