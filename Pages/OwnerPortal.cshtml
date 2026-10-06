@@ -1,0 +1,78 @@
+@page
+@model OwnerPortalModel
+@{
+    ViewData["Title"] = "Owner Portal";
+}
+
+<div class="container py-4">
+    <h1 class="mb-3">Owner Portal</h1>
+
+    <form method="get" class="row g-3 mb-4">
+        <div class="col-md-4">
+            <label class="form-label">Unit number</label>
+            <input class="form-control" name="unit" value="@Model.UnitNumber" />
+        </div>
+        <div class="col-md-2 align-self-end">
+            <button class="btn btn-primary" type="submit">View</button>
+        </div>
+    </form>
+
+    @if (Model.Unit is not null)
+    {
+        <div class="card shadow-sm mb-4">
+            <div class="card-body">
+                <h5 class="card-title">@Model.Unit.OwnerName</h5>
+                <p><strong>Unit:</strong> @Model.Unit.UnitNumber</p>
+                <p><strong>Current levy due:</strong> @Model.Unit.CurrentBalance.ToString("C")</p>
+                <p><strong>Debt:</strong> @Model.Unit.DebtBalance.ToString("C")</p>
+                <p><strong>Credit:</strong> @Model.Unit.CreditBalance.ToString("C")</p>
+            </div>
+        </div>
+
+        <h4>Statements</h4>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Period</th>
+                    <th>Total</th>
+                    <th>Paid</th>
+                    <th>Outstanding</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var statement in Model.Unit.LevyStatements.OrderByDescending(s => s.PeriodEnd))
+                {
+                    <tr>
+                        <td>@statement.PeriodStart.ToString("yyyy-MM-dd") to @statement.PeriodEnd.ToString("yyyy-MM-dd")</td>
+                        <td>@statement.TotalAmount.ToString("C")</td>
+                        <td>@statement.AmountPaid.ToString("C")</td>
+                        <td>@statement.OutstandingAmount.ToString("C")</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+
+        <h4 class="mt-4">Payments</h4>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Amount</th>
+                    <th>Source</th>
+                    <th>Notes</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var payment in Model.Unit.Payments.OrderByDescending(p => p.PaidOn))
+                {
+                    <tr>
+                        <td>@payment.PaidOn.ToString("yyyy-MM-dd")</td>
+                        <td>@payment.Amount.ToString("C")</td>
+                        <td>@payment.Source</td>
+                        <td>@payment.Notes</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+</div>

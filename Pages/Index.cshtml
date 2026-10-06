@@ -1,0 +1,62 @@
+﻿@page
+@model IndexModel
+@{
+    ViewData["Title"] = "Kumari Levy Dashboard";
+}
+
+<div class="container py-4">
+    <h1 class="mb-3">Kumari Levy Dashboard</h1>
+    <p class="text-muted">Overview of units, current balance, debt, and recent payments.</p>
+
+    <div class="row row-cols-1 row-cols-md-3 g-4 mb-4">
+        @foreach (var unit in Model.Units)
+        {
+            <div class="col">
+                <div class="card shadow-sm h-100">
+                    <div class="card-body">
+                        <h5 class="card-title">Unit @unit.UnitNumber</h5>
+                        <p class="card-text mb-1"><strong>Owner:</strong> @unit.OwnerName</p>
+                        <p class="card-text mb-1"><strong>Current levy due:</strong> @unit.CurrentBalance.ToString("C")</p>
+                        <p class="card-text mb-1"><strong>Debt:</strong> @unit.DebtBalance.ToString("C")</p>
+                        <p class="card-text mb-1"><strong>Credit:</strong> @unit.CreditBalance.ToString("C")</p>
+                        <p class="card-text mb-1"><strong>Total paid:</strong> @Model.TotalPaid.ToString("C")</p>
+                        <p class="card-text"><strong>Outstanding:</strong> @Model.OutstandingBalance.ToString("C")</p>
+                        <a class="btn btn-outline-primary btn-sm" href="/OwnerPortal?unit=@unit.UnitNumber">View owner portal</a>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+
+    @if (Model.RecentPayments.Any())
+    {
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <h5 class="card-title">Recent payment updates</h5>
+                <div class="table-responsive">
+                    <table class="table table-sm mb-0">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Amount</th>
+                                <th>Source</th>
+                                <th>Notes</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var payment in Model.RecentPayments)
+                            {
+                                <tr>
+                                    <td>@payment.PaidOn.ToShortDateString()</td>
+                                    <td>@payment.Amount.ToString("C")</td>
+                                    <td>@payment.Source</td>
+                                    <td>@payment.Notes</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    }
+</div>

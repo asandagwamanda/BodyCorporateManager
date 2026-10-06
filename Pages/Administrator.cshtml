@@ -1,0 +1,65 @@
+@page
+@model AdministratorModel
+@{
+    ViewData["Title"] = "Administrator";
+}
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h1 class="mb-3">Administrator</h1>
+                    <p class="text-muted">Upload Excel payment updates from owners and apply them to the levy balances.</p>
+
+                    @if (!string.IsNullOrEmpty(Model.Message))
+                    {
+                        <div class="alert alert-info">@Model.Message</div>
+                    }
+
+                    <form method="post" enctype="multipart/form-data" class="mb-4">
+                        <div class="mb-3">
+                            <label class="form-label">Upload payment update file</label>
+                            <input class="form-control" asp-for="Upload" type="file" accept=".xlsx" />
+                            <div class="form-text">Expected columns: UnitNumber, Amount, PaidOn, Notes.</div>
+                        </div>
+                        <button class="btn btn-primary" type="submit">Upload and apply payments</button>
+                    </form>
+
+                    @if (!string.IsNullOrEmpty(Model.UploadedFileName))
+                    {
+                        <div class="mb-3">
+                            <h5 class="mb-2">Uploaded file: @Model.UploadedFileName</h5>
+                            <p class="text-muted">Preview of the imported payment rows.</p>
+                            <div class="table-responsive">
+                                <table class="table table-sm table-bordered">
+                                    <thead>
+                                        <tr>
+                                            <th>Unit</th>
+                                            <th>Amount</th>
+                                            <th>Paid On</th>
+                                            <th>Notes</th>
+                                            <th>Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var row in Model.ImportedPayments)
+                                        {
+                                            <tr>
+                                                <td>@row.UnitNumber</td>
+                                                <td>@row.Amount.ToString("C")</td>
+                                                <td>@row.PaidOn.ToShortDateString()</td>
+                                                <td>@row.Notes</td>
+                                                <td>@row.Status</td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
