@@ -9,12 +9,16 @@ namespace BodyCorporateManager.Web.Pages;
 public class SignupModel : PageModel
 {
     private readonly AppDbContext _context;
+    private readonly IConfiguration _configuration;
 
     [BindProperty]
     public string UnitNumber { get; set; } = string.Empty;
 
     [BindProperty]
     public string OwnerName { get; set; } = string.Empty;
+
+    [BindProperty]
+    public string InviteCode { get; set; } = string.Empty;
 
     [BindProperty]
     public string Username { get; set; } = string.Empty;
@@ -27,9 +31,10 @@ public class SignupModel : PageModel
 
     public string Message { get; set; } = string.Empty;
 
-    public SignupModel(AppDbContext context)
+    public SignupModel(AppDbContext context, IConfiguration configuration)
     {
         _context = context;
+        _configuration = configuration;
     }
 
     public void OnGet()
@@ -38,9 +43,16 @@ public class SignupModel : PageModel
 
     public async Task<IActionResult> OnPostAsync()
     {
-        if (string.IsNullOrWhiteSpace(UnitNumber) || string.IsNullOrWhiteSpace(OwnerName) || string.IsNullOrWhiteSpace(Username) || string.IsNullOrWhiteSpace(CellphoneNumber) || string.IsNullOrWhiteSpace(Password))
+        if (string.IsNullOrWhiteSpace(UnitNumber) || string.IsNullOrWhiteSpace(OwnerName) || string.IsNullOrWhiteSpace(InviteCode) || string.IsNullOrWhiteSpace(Username) || string.IsNullOrWhiteSpace(CellphoneNumber) || string.IsNullOrWhiteSpace(Password))
         {
             Message = "Please fill in all required fields.";
+            return Page();
+        }
+
+        var configuredInviteCode = _configuration["INVITE_CODE"] ?? Environment.GetEnvironmentVariable("INVITE_CODE") ?? string.Empty;
+        if (!string.Equals(InviteCode.Trim(), configuredInviteCode.Trim(), StringComparison.Ordinal))
+        {
+            Message = "The invite code is invalid.";
             return Page();
         }
 
