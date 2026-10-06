@@ -1,5 +1,7 @@
 using BodyCorporateManager.Web.Data;
+using BodyCorporateManager.Web.Models;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Cryptography;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -34,6 +36,49 @@ using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
     db.Database.EnsureCreated();
+
+    var adminEmail = Environment.GetEnvironmentVariable("ADMIN_EMAIL") ?? "admin@bodycorporate.local";
+    var adminPassword = Environment.GetEnvironmentVariable("ADMIN_PASSWORD") ?? "Admin@123";
+    var adminUnitNumber = Environment.GetEnvironmentVariable("ADMIN_UNIT_NUMBER") ?? "ADMIN-001";
+    var adminOwnerName = Environment.GetEnvironmentVariable("ADMIN_OWNER_NAME") ?? "System Administrator";
+
+    var unit = db.Units.FirstOrDefault(u => u.UnitNumber == adminUnitNumber);
+    if (unit is null)
+    {
+        unit = new Unit
+        {
+            UnitNumber = adminUnitNumber,
+            OwnerName = adminOwnerName,
+            SquareMeters = 0,
+            LevyRatePerSquareMeter = 0,
+            CurrentBalance = 0,
+            DebtBalance = 0,
+            CreditBalance = 0
+        };
+
+        db.Units.Add(unit);
+        db.SaveChanges();
+    }
+
+    var hasAdmin = db.OwnerAccounts.Any(a => a.Username == adminEmail);
+    if (!hasAdmin)
+    {
+        var salt = Convert.ToBase64String(RandomNumberGenerator.GetBytes(16));
+        var hash = PasswordHelper.HashPassword(adminPassword, salt);
+
+        db.OwnerAccounts.Add(new OwnerAccount
+        {
+            UnitId = unit.Id,
+            Username = adminEmail,
+            CellphoneNumber = "+0000000000",
+            PasswordHash = hash,
+            PasswordSalt = salt,
+            IsActive = true,
+            CreatedAt = DateTime.UtcNow
+        });
+
+        db.SaveChanges();
+    }
 }
 
 app.MapRazorPages();
