@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: bodycorporate-manager
+    env: docker
+    plan: free
+    healthCheckPath: /
+    envVars:
+      - key: ASPNETCORE_ENVIRONMENT
+        value: Production
+      - key: ASPNETCORE_URLS
+        value: http://+:8080
+      - key: DB_PATH
+        value: /data/bodycorporate.db
+    disk:
+      name: database
+      mountPath: /data
+      sizeGB: 1
