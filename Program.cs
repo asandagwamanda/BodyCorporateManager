@@ -157,7 +157,7 @@ app.MapPost("/register", async (RegisterRequest req, AppDbContext db) =>
     return Results.Ok(new { message = "Registered" });
 });
 
-app.MapPost("/login", async (LoginRequest req, AppDbContext db) =>
+app.MapPost("/login", (LoginRequest req, AppDbContext db) =>
 {
     var account = db.OwnerAccounts.FirstOrDefault(a => a.Username == req.Username && a.IsActive);
     if (account is null || !PasswordHelper.VerifyPassword(req.Password, account.PasswordHash, account.PasswordSalt))
@@ -183,7 +183,7 @@ app.MapPost("/login", async (LoginRequest req, AppDbContext db) =>
     return Results.Ok(new { token = tokenString });
 });
 
-app.MapGet("/me", async (ClaimsPrincipal user, AppDbContext db) =>
+app.MapGet("/me", (ClaimsPrincipal user, AppDbContext db) =>
 {
     var idClaim = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
     if (!int.TryParse(idClaim, out var id))
